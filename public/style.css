@@ -23,6 +23,16 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── Ícones Lucide ── */
+svg.lucide {
+  width: 1em; height: 1em;
+  stroke: currentColor; fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  vertical-align: -0.15em; flex-shrink: 0;
+}
+.tema-icon svg.lucide { width: 2rem; height: 2rem; }
+.dica-icon { color: var(--accent); margin-right: 5px; }
+
 body {
   background: var(--bg);
   color: var(--text);
@@ -252,7 +262,7 @@ input[type=text]::placeholder { color: #8a7a8d; }
   font-size: .88rem; font-weight: 700; letter-spacing: .5px;
 }
 .jogador-chip.host { border-color: var(--accent); color: var(--accent); }
-.jogador-chip.host::before { content: '👑 '; }
+.jogador-chip svg.lucide { width: .9em; height: .9em; }
 
 /* ══════════════════════════════════
    GAME HEADER
@@ -299,9 +309,9 @@ input[type=text]::placeholder { color: #8a7a8d; }
 .dica-box {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 8px 16px;
-  font-size: .85rem; color: var(--text-muted); width: 100%; text-align: center;
+  font-size: .85rem; color: var(--text-muted); width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
 }
-.dica-label { color: var(--accent); font-weight: 700; margin-right: 5px; }
 
 /* ── Grade ── */
 .grade { display: flex; flex-direction: column; gap: var(--gap); }
@@ -411,9 +421,16 @@ input[type=text]::placeholder { color: #8a7a8d; }
   border-radius: 6px; padding: 11px 16px;
 }
 .ranking-item.primeiro { border-color: #ffd700; background: #1c1800; }
-.ranking-pos  { font-size: 1.2rem; min-width: 28px; text-align: center; }
+.ranking-pos  { font-size: 1rem; font-weight: 900; min-width: 32px; text-align: center; }
+.ranking-pos.pos-1 { color: #ffd700; }
+.ranking-pos.pos-2 { color: #c0c0c0; }
+.ranking-pos.pos-3 { color: #cd7f32; }
 .ranking-nome { flex: 1; font-weight: 700; font-size: .92rem; letter-spacing: .5px; }
 .ranking-pts  { font-weight: 900; font-size: 1rem; color: var(--accent); }
+
+/* ── Botões com ícone ── */
+.btn { display: inline-flex; align-items: center; gap: 7px; }
+.msg-resultado { display: flex; align-items: center; justify-content: center; gap: 7px; }
 
 /* ══════════════════════════════════
    RESPONSIVO

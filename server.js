@@ -352,7 +352,7 @@ io.on('connection', socket => {
     const pos = disponiveis[Math.floor(Math.random() * disponiveis.length)];
     estado.hintadas.add(pos);
 
-    const CUSTO = 20;
+    const CUSTO = 5;
     const jogador = sala.jogadores.find(j => j.id === socket.id);
     if (jogador) jogador.pontos = Math.max(0, jogador.pontos - CUSTO);
 

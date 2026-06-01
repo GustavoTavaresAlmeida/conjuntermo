@@ -10,6 +10,13 @@ let estadoJogo = {
   maxTentativas: 0, linhaAtual: 0, letraAtual: 0, acabou: false,
 };
 
+// ── Restaura nome salvo ──
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('conjuntermo_nome');
+  if (saved) document.getElementById('nome-input').value = saved;
+  lucide.createIcons();
+});
+
 // ── Telas ──
 function mostrarTela(id) {
   document.querySelectorAll('.tela').forEach(t => {
@@ -18,7 +25,10 @@ function mostrarTela(id) {
   });
   const tela = document.getElementById(id);
   tela.style.display = 'flex';
-  requestAnimationFrame(() => tela.classList.add('ativa'));
+  requestAnimationFrame(() => {
+    tela.classList.add('ativa');
+    lucide.createIcons();
+  });
 }
 
 // ══════════════════════════════════════════
@@ -28,6 +38,7 @@ function mostrarTela(id) {
 function getNome() {
   const n = document.getElementById('nome-input').value.trim();
   if (!n) { alert('Digite seu nome primeiro!'); return null; }
+  localStorage.setItem('conjuntermo_nome', n);
   return n;
 }
 
@@ -79,7 +90,7 @@ function renderizarListaSalas(salas) {
     <div class="sala-item" onclick="entrarPorItem('${s.codigo}')">
       <div class="sala-codigo">${s.codigo}</div>
       <div class="sala-info">
-        <div class="sala-host">👤 ${s.host}</div>
+        <div class="sala-host">${s.host}</div>
         <div class="sala-sub">${s.jogadores} jogador${s.jogadores !== 1 ? 'es' : ''}</div>
       </div>
       <div class="sala-tema-badge ${s.temaKey}">${s.tema}</div>
@@ -103,8 +114,12 @@ function entrarPorCodigo() {
 
 function renderizarLobby(jogadores) {
   document.getElementById('lista-jogadores-lobby').innerHTML = jogadores.map(j =>
-    `<div class="jogador-chip ${j.id === hostId ? 'host' : ''}">${j.nome}</div>`
+    `<div class="jogador-chip ${j.id === hostId ? 'host' : ''}">
+      ${j.id === hostId ? '<i data-lucide="crown"></i>' : '<i data-lucide="user"></i>'}
+      ${j.nome}
+    </div>`
   ).join('');
+  lucide.createIcons();
 }
 
 function iniciarJogo() { socket.emit('iniciarJogo', { codigo: meuCodigo }); }
@@ -294,7 +309,7 @@ function mostrarRanking({ jogadores, palavra }) {
   document.getElementById('ranking-palavra').textContent = palavra.replace(/-/g, ' ');
   document.getElementById('ranking-lista').innerHTML = jogadores.map((j, i) =>
     `<div class="ranking-item ${i === 0 ? 'primeiro' : ''}">
-      <div class="ranking-pos">${['🥇','🥈','🥉'][i] || (i+1)+'º'}</div>
+      <div class="ranking-pos pos-${i+1}">${i+1}º</div>
       <div class="ranking-nome">${j.nome}</div>
       <div class="ranking-pts">${j.pontos} pts</div>
     </div>`
@@ -322,7 +337,7 @@ socket.on('listaSalas', salas => renderizarListaSalas(salas));
 socket.on('salaCriada', ({ codigo, jogadores, temaNome }) => {
   meuCodigo = codigo; souHost = true; hostId = socket.id;
   document.getElementById('codigo-sala').textContent = codigo;
-  document.getElementById('tema-lobby').textContent = '📚 ' + temaNome;
+  document.getElementById('tema-lobby').textContent = temaNome;
   document.getElementById('btn-iniciar').classList.remove('hidden');
   document.getElementById('aguardando-msg').classList.add('hidden');
   renderizarLobby(jogadores);
@@ -332,7 +347,7 @@ socket.on('salaCriada', ({ codigo, jogadores, temaNome }) => {
 socket.on('entrou', ({ codigo, jogadores, temaNome }) => {
   meuCodigo = codigo; souHost = false;
   document.getElementById('codigo-sala').textContent = codigo;
-  document.getElementById('tema-lobby').textContent = '📚 ' + temaNome;
+  document.getElementById('tema-lobby').textContent = temaNome;
   document.getElementById('btn-iniciar').classList.add('hidden');
   document.getElementById('aguardando-msg').classList.remove('hidden');
   renderizarLobby(jogadores);
@@ -374,14 +389,16 @@ socket.on('resultadoTentativa', ({ tentativas, acertou, acabou, palavra }) => {
 
     if (acertou) {
       const m = document.getElementById('msg-resultado');
-      m.textContent = `✅ Correto! +${Math.max(10, 100 - (tentativas.length - 1) * 15)} pontos`;
+      m.innerHTML = `<i data-lucide="check-circle"></i> Correto! +${Math.max(10, 100 - (tentativas.length - 1) * 15)} pontos`;
       m.className = 'msg-resultado acerto';
       m.classList.remove('hidden');
+      lucide.createIcons();
     } else if (acabou) {
       const m = document.getElementById('msg-resultado');
-      m.textContent = `❌ Era: ${palavra.replace(/-/g, ' ')}`;
+      m.innerHTML = `<i data-lucide="x-circle"></i> Era: ${palavra.replace(/-/g, ' ')}`;
       m.className = 'msg-resultado erro';
       m.classList.remove('hidden');
+      lucide.createIcons();
     } else {
       ativarPrimeiraCelula();
     }
@@ -399,7 +416,7 @@ socket.on('rodadaFinalizada', ({ jogadores, palavra }) => mostrarRanking({ jogad
 socket.on('jogoFinalizado', ({ jogadores }) => {
   document.getElementById('fim-ranking').innerHTML = jogadores.map((j, i) =>
     `<div class="ranking-item ${i === 0 ? 'primeiro' : ''}">
-      <div class="ranking-pos">${['🥇','🥈','🥉'][i] || (i+1)+'º'}</div>
+      <div class="ranking-pos pos-${i+1}">${i+1}º</div>
       <div class="ranking-nome">${j.nome}</div>
       <div class="ranking-pts">${j.pontos} pts</div>
     </div>`
@@ -412,7 +429,8 @@ socket.on('erro', msg => alert('Erro: ' + msg));
 socket.on('erroTentativa', msg => {
   sacudirLinha(estadoJogo.linhaAtual);
   const m = document.getElementById('msg-resultado');
-  m.textContent = msg;
+  m.innerHTML = `<i data-lucide="alert-circle"></i> ${msg}`;
+  lucide.createIcons();
   m.className = 'msg-resultado aviso';
   m.classList.remove('hidden');
   setTimeout(() => m.classList.add('hidden'), 2000);
@@ -446,7 +464,8 @@ socket.on('dica', ({ posicao, letra, custo }) => {
 
   // Feedback visual
   const m = document.getElementById('msg-resultado');
-  m.textContent = `💡 Dica usada! −${custo} pontos`;
+  m.innerHTML = `<i data-lucide="lightbulb"></i> Dica usada! -${custo} pontos`;
+  lucide.createIcons();
   m.className = 'msg-resultado aviso';
   m.classList.remove('hidden');
   setTimeout(() => m.classList.add('hidden'), 2000);
@@ -454,7 +473,8 @@ socket.on('dica', ({ posicao, letra, custo }) => {
 
 socket.on('dicaErro', msg => {
   const m = document.getElementById('msg-resultado');
-  m.textContent = '⚠️ ' + msg;
+  m.innerHTML = `<i data-lucide="alert-triangle"></i> ${msg}`;
+  lucide.createIcons();
   m.className = 'msg-resultado aviso';
   m.classList.remove('hidden');
   setTimeout(() => m.classList.add('hidden'), 2000);
