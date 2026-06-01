@@ -107,6 +107,19 @@ const TEMAS = {
 };
 
 // ═══════════════════════════════════════════════
+//  ÍNDICE DE PALAVRAS VÁLIDAS (por nº de letras)
+// ═══════════════════════════════════════════════
+
+const PALAVRAS_VALIDAS = {};
+Object.values(TEMAS).forEach(({ palavras }) => {
+  palavras.forEach(({ palavra }) => {
+    const norm = soLetras(palavra).toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if (!PALAVRAS_VALIDAS[norm.length]) PALAVRAS_VALIDAS[norm.length] = new Set();
+    PALAVRAS_VALIDAS[norm.length].add(norm);
+  });
+});
+
+// ═══════════════════════════════════════════════
 //  ESTADO DO SERVIDOR
 // ═══════════════════════════════════════════════
 
@@ -269,6 +282,12 @@ io.on('connection', socket => {
 
     if (t.length !== nLetras) {
       socket.emit('erroTentativa', `A palavra deve ter ${nLetras} letras`);
+      return;
+    }
+
+    const validas = PALAVRAS_VALIDAS[nLetras];
+    if (!validas || !validas.has(t)) {
+      socket.emit('erroTentativa', 'Palavra não encontrada no banco!');
       return;
     }
 
