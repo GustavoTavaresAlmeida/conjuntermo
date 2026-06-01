@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConjunTermo 🎯</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ══════════════ TELA INICIAL ══════════════ -->
+  <div id="tela-inicio" class="tela ativa">
+    <div class="logo-box">
+      <h1 class="logo">Conjun<span>Termo</span></h1>
+      <p class="subtitulo">Adivinhe conjunções e regras gramaticais ao estilo Termo!</p>
+    </div>
+    <div class="menu-card">
+      <input id="nome-input" type="text" placeholder="Seu nome" maxlength="20" />
+      <div class="menu-botoes">
+        <button class="btn btn-primary" onclick="irParaCriar()">🏠 Criar Sala</button>
+        <button class="btn btn-secondary" onclick="irParaEntrar()">🚪 Entrar em Sala</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA CRIAR SALA ══════════════ -->
+  <div id="tela-criar" class="tela">
+    <div class="logo-box">
+      <h2 class="section-title">Escolha o Tema</h2>
+      <p class="subtitulo">Selecione apenas um tema para sua sala</p>
+    </div>
+
+    <div class="temas-grid">
+      <label class="tema-card" data-tema="adverbiais">
+        <input type="radio" name="tema" value="adverbiais" checked />
+        <div class="tema-icon">📚</div>
+        <div class="tema-nome">Conjunções<br/>Adverbiais</div>
+        <div class="tema-exemplos">quando · embora · porque · conforme · logo que</div>
+        <div class="tema-count">33 palavras</div>
+        <div class="tema-check">✓</div>
+      </label>
+
+      <label class="tema-card" data-tema="coordenadas">
+        <input type="radio" name="tema" value="coordenadas" />
+        <div class="tema-icon">🔗</div>
+        <div class="tema-nome">Conjunções<br/>Coordenadas</div>
+        <div class="tema-exemplos">mas · portanto · contudo · todavia · bem como</div>
+        <div class="tema-count">15 palavras</div>
+        <div class="tema-check">✓</div>
+      </label>
+
+      <label class="tema-card" data-tema="outras">
+        <input type="radio" name="tema" value="outras" />
+        <div class="tema-icon">📖</div>
+        <div class="tema-nome">Outras Regras<br/>Gramaticais</div>
+        <div class="tema-exemplos">sujeito · predicado · morfema · ditongo · crase</div>
+        <div class="tema-count">25 palavras</div>
+        <div class="tema-check">✓</div>
+      </label>
+    </div>
+
+    <div class="bottom-actions">
+      <button class="btn btn-ghost" onclick="voltarInicio()">← Voltar</button>
+      <button class="btn btn-primary btn-lg" onclick="criarSala()">Criar Sala →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA ENTRAR ══════════════ -->
+  <div id="tela-entrar" class="tela">
+    <div class="logo-box">
+      <h2 class="section-title">Entrar em uma Sala</h2>
+    </div>
+
+    <div class="entrar-card">
+      <!-- Código direto -->
+      <div class="codigo-direto">
+        <p class="label-section">Tem um código?</p>
+        <div class="codigo-row">
+          <input id="codigo-input" type="text" placeholder="Código (ex: AB3X)" maxlength="4"
+            style="text-transform:uppercase; letter-spacing:4px; text-align:center" />
+          <button class="btn btn-primary" onclick="entrarPorCodigo()">Entrar →</button>
+        </div>
+      </div>
+
+      <div class="divisor"><span>ou escolha uma sala aberta</span></div>
+
+      <!-- Browser de salas -->
+      <div class="salas-browser">
+        <div class="salas-header">
+          <p class="label-section">Salas disponíveis</p>
+          <button class="btn-icon" onclick="atualizarSalas()" title="Atualizar">↺</button>
+        </div>
+        <div id="lista-salas" class="lista-salas">
+          <p class="sem-salas">Nenhuma sala aberta no momento</p>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-ghost" onclick="voltarInicio()">← Voltar</button>
+  </div>
+
+  <!-- ══════════════ LOBBY ══════════════ -->
+  <div id="tela-lobby" class="tela">
+    <div class="lobby-card">
+      <div class="lobby-header">
+        <div>
+          <h2>Sala <span id="codigo-sala" class="codigo-badge"></span></h2>
+          <p id="tema-lobby" class="tema-badge-lobby"></p>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="sairDaSala()">Sair ×</button>
+      </div>
+      <p class="hint">Compartilhe o código com seus amigos!</p>
+      <div id="lista-jogadores-lobby" class="lista-jogadores"></div>
+      <button id="btn-iniciar" class="btn btn-primary btn-lg hidden" onclick="iniciarJogo()">▶ Iniciar Jogo</button>
+      <p id="aguardando-msg" class="hint">Aguardando o host iniciar...</p>
+    </div>
+  </div>
+
+  <!-- ══════════════ JOGO ══════════════ -->
+  <div id="tela-jogo" class="tela">
+    <header class="game-header">
+      <div class="game-info">
+        <span id="rodada-info" class="badge-rodada"></span>
+        <span id="tipo-info" class="badge-tipo"></span>
+      </div>
+      <div id="placar-mini" class="placar-mini"></div>
+      <button class="btn-sair-jogo" onclick="confirmarSair()" title="Voltar ao início">✕ Sair</button>
+    </header>
+
+    <div class="game-body">
+      <div class="dica-box">
+        <span class="dica-label">💡 Dica:</span>
+        <span id="dica-texto"></span>
+      </div>
+
+      <div id="grade" class="grade"></div>
+      <div id="teclado" class="teclado"></div>
+
+      <div class="acoes-jogo">
+        <button id="btn-dica" class="btn btn-dica" onclick="pedirDica()">
+          💡 Dica <span class="dica-custo">−20 pts</span>
+        </button>
+      </div>
+
+      <div id="msg-resultado" class="msg-resultado hidden"></div>
+      <p id="aguardando-proximo" class="hint hidden"></p>
+    </div>
+  </div>
+
+  <!-- ══════════════ RANKING RODADA ══════════════ -->
+  <div id="tela-ranking" class="tela">
+    <div class="ranking-card">
+      <h2>🏆 Placar da Rodada</h2>
+      <p class="hint">A resposta era:</p>
+      <p id="ranking-palavra" class="palavra-revelada"></p>
+      <div id="ranking-lista" class="ranking-lista"></div>
+      <button id="btn-prox-host" class="btn btn-primary btn-lg hidden" onclick="proximaRodada()">
+        Próxima Rodada →
+      </button>
+      <p id="ranking-aguardando" class="hint hidden">Aguardando o host avançar...</p>
+      <button class="btn btn-ghost" onclick="confirmarSair()">✕ Abandonar jogo</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ FIM DE JOGO ══════════════ -->
+  <div id="tela-fim" class="tela">
+    <div class="fim-card">
+      <h2>🎉 Fim de Jogo!</h2>
+      <div id="fim-ranking" class="ranking-lista"></div>
+      <button class="btn btn-primary btn-lg" onclick="location.reload()">Jogar Novamente</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
