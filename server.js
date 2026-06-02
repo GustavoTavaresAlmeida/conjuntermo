@@ -107,6 +107,32 @@ const TEMAS = {
 };
 
 // ═══════════════════════════════════════════════
+//  VALIDAÇÃO COM DICIONÁRIO PORTUGUÊS
+// ═══════════════════════════════════════════════
+
+const cachePortugues = new Map(); // palavra normalizada → boolean
+
+async function existeNoPortugues(palavra) {
+  if (cachePortugues.has(palavra)) return cachePortugues.get(palavra);
+  try {
+    const res = await fetch(`https://api.dicionario-aberto.net/word/${palavra.toLowerCase()}`, {
+      signal: AbortSignal.timeout(2500),
+    });
+    if (!res.ok) {
+      cachePortugues.set(palavra, false);
+      return false;
+    }
+    const data = await res.json();
+    const existe = Array.isArray(data) && data.length > 0;
+    cachePortugues.set(palavra, existe);
+    return existe;
+  } catch {
+    // Em caso de falha de rede, permite a tentativa (não bloqueia o jogo)
+    return true;
+  }
+}
+
+// ═══════════════════════════════════════════════
 //  ÍNDICE DE PALAVRAS VÁLIDAS (por nº de letras)
 // ═══════════════════════════════════════════════
 
@@ -270,7 +296,7 @@ io.on('connection', socket => {
     iniciarRodada(codigo);
   });
 
-  socket.on('tentativa', ({ codigo, tentativa }) => {
+  socket.on('tentativa', async ({ codigo, tentativa }) => {
     const sala = salas[codigo];
     if (!sala) return;
 
@@ -286,8 +312,16 @@ io.on('connection', socket => {
     }
 
     const validas = PALAVRAS_VALIDAS[nLetras];
-    if (!validas || !validas.has(t)) {
-      socket.emit('erroTentativa', 'Palavra não encontrada no banco!');
+    const noBanco = validas && validas.has(t);
+
+    if (!noBanco) {
+      // Verifica se ao menos existe no português
+      const ehPalavraReal = await existeNoPortugues(t);
+      if (!ehPalavraReal) {
+        socket.emit('erroTentativa', 'Essa palavra não existe!');
+      } else {
+        socket.emit('erroTentativa', 'Palavra válida, mas fora do tema do jogo!');
+      }
       return;
     }
 
